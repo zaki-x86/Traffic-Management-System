@@ -1,17 +1,16 @@
-#include <avr/io.h>
-#include <util/delay.h>
-#include <avr/interrupt.h>
-#include "LCD.h"
-#include "timer.h"
-#include "LED.h"
+#include "App.h"
 
-#define F_CPU 8000000UL
-volatile unsigned char counter1 = 0;
-volatile unsigned char counter_green = 10;
-volatile unsigned char counter_yellow = 5;
-volatile unsigned char counter_red = 7;
+int main(void) {
+	app_init();
 
-int main(void)
+	while (1)
+	{
+		app_run();
+	}
+}
+
+
+/* int main(void)
 {
 	LED_vInit('D',0);
 	LED_vInit('D',1);
@@ -39,6 +38,7 @@ int main(void)
 				LCD_vSend_char((counter_green % 10) + 48);
 			}
 		}
+		
 		_delay_ms(500);
 		LED_vTurnOn('D',1);
 		LED_vTurnOff('D',0);
@@ -82,4 +82,4 @@ int main(void)
 ISR(TIMER0_COMP_vect)
 {
 	counter1++;
-}
+} */

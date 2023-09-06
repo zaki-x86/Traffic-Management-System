@@ -6,8 +6,6 @@ void DIO_vsetPINDir(unsigned char portname,unsigned char pinnumber,unsigned char
 {
 	switch(portname)
 	{
-
-
 		case 'A':
 		if(direction==1)
 		{

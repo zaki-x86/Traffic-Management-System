@@ -1,6 +1,9 @@
 
 #ifndef TIMER_H_
 #define TIMER_H_
+
+void timer_init(void);
+
 /*
 	Function Name        : timer_CTC_init_interrupt
 	Function Returns     : void
@@ -34,4 +37,13 @@ void timer_wave_fastPWM(void);
 */
 
 void timer_wave_phasecorrectPWM(void);
+
+/**
+ * 	Function Name        : timer_delay
+ *  Function Returns     : void
+ * 	Function Arguments   : uint16_t millisec
+ * 	Function Description : delay the program for a specific time.
+ */
+void timer_delay(uint16_t millisec);
+
 #endif /* TIMER_H_ */
