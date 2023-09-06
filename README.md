@@ -10,10 +10,10 @@ The system detects when a button is pressed, afterwards, based on its current st
 
 The system consists of:
 
-• AVR Atmega32 (1MHz)
-• 2 Green LEDs
-• 2 Yellow LEDs
-• 2 Red LEDs
-• 6 300 Ohm resistors
-• 1 10k Ohm resistor
-• 1 Push Button
+- AVR Atmega32 (1MHz)
+- 2 Green LEDs
+- 2 Yellow LEDs
+- 2 Red LEDs
+- 6 300 Ohm resistors
+- 1 10k Ohm resistor
+- 1 Push Button
