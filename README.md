@@ -1,6 +1,6 @@
 # Traffic Lights Management System
 
-https://github.com/zaki-x86/Traffic-Management-System/assets/55619526/3aeef4fc-e208-4138-baa2-68238758db39
+https://github.com/zaki-x86/Traffic-Management-System/assets/55619526/9e16bd4e-0622-419e-bcd9-cb67e98fbdd7
 
 ## Functionality
 
@@ -17,3 +17,4 @@ The system consists of:
 - 6 300 Ohm resistors
 - 1 10k Ohm resistor
 - 1 Push Button
+- LCD display
