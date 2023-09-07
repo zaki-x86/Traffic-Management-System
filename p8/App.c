@@ -70,7 +70,7 @@ void app_run(void) {
 				LED_vTurnOn(LED_CAR_PORT,LED_CAR_G_PIN);
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 				
-				for(i=0;i<50;i++){
+				for(i=0; i < 50; i++){
 					timer_delay(68);
 					if(!normalmode)	break;//check if ISR was called
 				}
@@ -86,7 +86,7 @@ void app_run(void) {
 					if(prevcarLED!=2){
 						LED_vTurnOn(LED_PED_PORT,LED_PED_R_PIN);
 						//blink both yellow leds
-						for(i=0;i<5;i++){
+						for(i=0; i<5; i++){
 							LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 							LED_vTurnOn(LED_PED_PORT,LED_PED_Y_PIN);
 							timer_delay(390);
@@ -103,7 +103,7 @@ void app_run(void) {
 					LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
 				} else {
 					//blink car yellow led
-					for(i=0;i<5;i++){
+					for(i=0; i < 5; i++){
 						LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 						timer_delay(380);
 						LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
@@ -132,7 +132,7 @@ void app_run(void) {
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_G_PIN);
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 				LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
-				for(i=0;i<50;i++){
+				for(i=0; i < 50; i++){
 					timer_delay(68);
 					if(!normalmode)break;
 				}
@@ -187,7 +187,7 @@ void app_run(void) {
 }
 
 ISR(__vector_1){
-	normalmode=0;
+	normalmode = 0;
 }
 
 void turn_on_led_car_g() {

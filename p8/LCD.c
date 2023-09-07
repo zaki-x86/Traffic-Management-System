@@ -5,8 +5,23 @@
  *      Author: win 10
  */
 #include "LCD.h"
+
 #define  F_CPU 8000000UL
+
 #include <util/delay.h>
+#include <stdint.h>
+
+
+typedef struct LCD_t LCD_Config;
+
+struct LCD_t
+{
+	unsigned char data_port;
+	unsigned char control_port;
+	uint8_t rs;
+	uint8_t rw;
+	uint8_t en;
+};
 
 void LCD_vInit(void)
 {
@@ -108,11 +123,13 @@ void LCD_vSend_string(char *data)
 		data++;
 	}
 }
+
 void LCD_clearscreen()
 {
 	LCD_vSend_cmd(CLR_SCREEN);
 	_delay_ms(10);
 }
+
 void LCD_movecursor(char row,char coloumn)
 {
 	char data ;
