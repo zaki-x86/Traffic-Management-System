@@ -8,26 +8,11 @@
 #include "button.h"
 #include "std_macros.h"
 
-volatile unsigned char counter1 = 0;
-volatile unsigned char counter_green = 10;
-volatile unsigned char counter_yellow = 5;
-volatile unsigned char counter_red = 7;
+// Initial states
+CAR_LED carLED = GREEN; // 0 green 1 yellow	2 red
+CAR_LED prevcarLED = YELLOW;
+TRAFFIC_MODE mode = NORMAL; //1 normal 0 pedestrian
 
-#define LED_CAR_PORT 'A'
-#define LED_CAR_G_PIN 0
-#define LED_CAR_Y_PIN 1
-#define LED_CAR_R_PIN 2
-
-#define LED_PED_PORT 'B'
-#define LED_PED_G_PIN 0
-#define LED_PED_Y_PIN 1
-#define LED_PED_R_PIN 2
-
-uint8_t carLED = 0; //0 green 1 yello	w 2 red
-uint8_t prevcarLED = 1;
-uint8_t normalmode = 1; //1 normal 0 pedestrian
-
-void turn_on_led_car_g();
 
 void app_init(void) {
     //Car LED initialization
@@ -42,6 +27,9 @@ void app_init(void) {
 
     // Button initialization
     button_init(BUTTON_1_PORT, BUTTON_1_PIN);
+
+	// LCD initialization
+	LCD_vInit();
     
 	//LCD_vInit();
 	timer_init();
@@ -53,40 +41,44 @@ void app_init(void) {
 }
 
 void app_run(void) {
-    //variable to be used in for loop
 	uint8_t i;
 
-    if (normalmode || carLED == 0 || carLED == 1) {
-        if (!normalmode)
-            carLED = 1;
+    if (mode == NORMAL || carLED == GREEN || carLED == YELLOW) {
+        if (mode == PEDESTRIAN)
+            carLED = YELLOW;
         
         // Turn off pedestrian leds
         LED_vTurnOff(LED_PED_PORT, LED_PED_G_PIN);
         LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
         
+		LCD_clearscreen();
+		LCD_vSend_string("press to cross");
+
         switch(carLED){
-			//Case GREEN LED
-			case 0:
-				LED_vTurnOn(LED_CAR_PORT,LED_CAR_G_PIN);
-				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
+			case GREEN:
+				LED_vTurnOn(LED_CAR_PORT, LED_CAR_G_PIN);
+				LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
+				LED_vTurnOff(LED_CAR_PORT, LED_CAR_R_PIN);
 				
-				for(i=0; i < 50; i++){
+				for(i = 0; i < 50; i++){
 					timer_delay(68);
-					if(!normalmode)	break;//check if ISR was called
+					
+					// Check if ISR was called
+					if(mode == PEDESTRIAN) {
+						break;
+					}	
 				}
-				carLED=1;
-				prevcarLED=0;
+
+				carLED = YELLOW;
+				prevcarLED = GREEN;
 				break;
 				
-			//Case YELLOW LED 
-			case 1:
-				//if not normalmode then we need to blink both
-				
-				if(!normalmode){
-					if(prevcarLED!=2){
+			case YELLOW:				
+				if(mode == PEDESTRIAN){
+					if(prevcarLED != RED){
 						LED_vTurnOn(LED_PED_PORT,LED_PED_R_PIN);
 						//blink both yellow leds
-						for(i=0; i<5; i++){
+						for(i = 0; i < 5; i++){
 							LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 							LED_vTurnOn(LED_PED_PORT,LED_PED_Y_PIN);
 							timer_delay(390);
@@ -98,173 +90,127 @@ void app_run(void) {
 							timer_delay(390);
 						}
 					}
-					prevcarLED=1;//to go to Ped lights logic
-					carLED=2;
+					prevcarLED = YELLOW; //to go to Ped lights logic
+					carLED = RED;
 					LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
+
 				} else {
-					//blink car yellow led
-					for(i=0; i < 5; i++){
+					for(i = 0; i < 5; i++){
 						LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 						timer_delay(380);
 						LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 						timer_delay(180);
 						LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 						timer_delay(380);
-						if(!normalmode){//check if ISR was called
-							prevcarLED=1;
+						
+						//check if ISR was called
+						if(mode == PEDESTRIAN) {
 							break;
 						}
 					}
 				}
+
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 				LED_vTurnOff(LED_PED_PORT,LED_PED_Y_PIN);
+
 				//Configure variables for correct switching
-				if(prevcarLED==0){
-					carLED=2;
-					prevcarLED=1;
-				}else if(prevcarLED==2){
-					carLED=0;
-					prevcarLED=1;
+				if(prevcarLED == GREEN){
+					carLED = RED;
+					prevcarLED = YELLOW;
+				} else if(prevcarLED == RED){
+					carLED = GREEN;
+					prevcarLED = YELLOW;
 				}
 				break;
-			//Case RED LED
-			case 2:
+
+			case RED:
+				LCD_clearscreen();
+				LCD_vSend_string("cross the road");
+				
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_G_PIN);
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 				LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
-				for(i=0; i < 50; i++){
+
+				for(i = 0; i < 50; i++){
 					timer_delay(68);
-					if(!normalmode)break;
+					if(mode == PEDESTRIAN) {
+						break;
+					}
 				}
-				prevcarLED=2;
-				carLED=1;
+
+				prevcarLED = RED;
+				carLED = YELLOW;
 				break;
+
 			default:
-				carLED=2;
-				prevcarLED=1;
+				carLED = RED;
+				prevcarLED = YELLOW;
 				break;
 		}
 		
-	}else{
-		//Configure PED LEDs
-		LED_vTurnOn(LED_PED_PORT,LED_PED_G_PIN);
-		LED_vTurnOff(LED_PED_PORT,LED_PED_Y_PIN);
-		LED_vTurnOff(LED_PED_PORT,LED_PED_R_PIN);
+	} else {
+		LCD_clearscreen();
+		LCD_vSend_string("cross the road");
 		
+		//Configure PED LEDs
+		LED_vTurnOn(LED_PED_PORT, LED_PED_G_PIN);
+		LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
+		LED_vTurnOff(LED_PED_PORT, LED_PED_R_PIN);
+
 		//Configure CAR LEDs
-		LED_vTurnOff(LED_CAR_PORT,LED_CAR_G_PIN);
-		LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
-		LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
-		timer_delay(5000);//5 sec delay
+		LED_vTurnOff(LED_CAR_PORT, LED_CAR_G_PIN);
+		LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
+		LED_vTurnOn(LED_CAR_PORT, LED_CAR_R_PIN);
+
+		volatile unsigned int ped_counter = 10;
+		LCD_clearscreen();
+		LCD_vSend_string("Remaining 10 sec");
+		
+		while(ped_counter > 0)
+		{
+			timer_delay(1000);
+			ped_counter--;
+			LCD_movecursor(1,11);
+			LCD_vSend_char(' ');
+			LCD_vSend_char((ped_counter % 10) + 48);
+		}
 		
 		//make sure car red light is off
-		LED_vTurnOff(LED_CAR_PORT,LED_CAR_R_PIN);
+		LED_vTurnOff(LED_CAR_PORT, LED_CAR_R_PIN);
+		
+		LCD_clearscreen();
+		LCD_vSend_string("Don't cross");
 		
 		//blink both yellow while ped green is on
-		for(i=0;i<5;i++){
-			LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
-			LED_vTurnOn(LED_PED_PORT,LED_PED_Y_PIN);
+		for(i = 0; i < 5; i++){
+			LED_vTurnOn(LED_CAR_PORT, LED_CAR_Y_PIN);
+			LED_vTurnOn(LED_PED_PORT, LED_PED_Y_PIN);
 			timer_delay(390);
-			LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
-			LED_vTurnOff(LED_PED_PORT,LED_PED_Y_PIN);
+			LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
+			LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
 			timer_delay(190);
-			LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
-			LED_vTurnOn(LED_PED_PORT,LED_PED_Y_PIN);
+			LED_vTurnOn(LED_CAR_PORT, LED_CAR_Y_PIN);
+			LED_vTurnOn(LED_PED_PORT, LED_PED_Y_PIN);
 			timer_delay(390);
 		}
+
 		//Turn off yellow LEDs 
-		LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
-		LED_vTurnOff(LED_PED_PORT,LED_PED_Y_PIN);
+		LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
+		LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
+
 		//turn on PED red LED
 		LED_vTurnOn(LED_PED_PORT,LED_PED_R_PIN);
-		//reset normalmode
-		normalmode=1;
+
+		//reset mode
+		mode = NORMAL;
+
 		//Configure carLED variables
-		carLED=0;
-		prevcarLED=1;
+		carLED = GREEN;
+		prevcarLED = YELLOW;
 	}
 	
 }
 
 ISR(__vector_1){
-	normalmode = 0;
-}
-
-void turn_on_led_car_g() {
-    LCD_clearscreen();
-    LCD_vSend_string("Remaining 10 sec");
-    LED_vTurnOn(LED_CAR_PORT, LED_CAR_G_PIN);
-    
-    while(counter_green > 0)
-    {
-        if(counter1 >= 10)
-        {
-            counter1 = 0;
-            counter_green--;
-            LCD_movecursor(1,11);
-            LCD_vSend_char(' ');
-            LCD_vSend_char((counter_green % 10) + 48);
-        }
-    }
-    
-    _delay_ms(500);
-    LED_vTurnOff(LED_CAR_PORT, LED_CAR_G_PIN); 
-}
-
-void func() {
-    counter_green = 10;
-    counter_yellow = 5;
-    counter_red = 7;
-    LCD_clearscreen();
-    LCD_vSend_string("Remaining 10 sec");
-    LED_vTurnOn(LED_CAR_PORT, LED_CAR_G_PIN);
-    
-    while(counter_green > 0)
-    {
-        if(counter1 >= 10)
-        {
-            counter1 = 0;
-            counter_green--;
-            LCD_movecursor(1,11);
-            LCD_vSend_char(' ');
-            LCD_vSend_char((counter_green % 10) + 48);
-        }
-    }
-    
-    _delay_ms(500); 
-    LED_vTurnOn(LED_CAR_PORT, LED_CAR_Y_PIN);
-    LED_vTurnOff(LED_CAR_PORT, LED_CAR_G_PIN);
-    LCD_clearscreen();
-    LCD_vSend_string("Remaining  5 sec");
-
-    while(counter_yellow > 0)
-    {
-        if(counter1 >= 10)
-        {
-            counter1 = 0;
-            counter_yellow--;
-            LCD_movecursor(1,11);
-            LCD_vSend_char(' ');
-            LCD_vSend_char((counter_yellow % 10) + 48);
-        }
-    }
-    _delay_ms(500);
-    LED_vTurnOn(LED_CAR_PORT, LED_CAR_R_PIN);
-    LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
-    LCD_clearscreen();
-    LCD_vSend_string("Remaining  7 sec");
-
-    while(counter_red > 0)
-    {
-        if(counter1 >= 10)
-        {
-            counter1 = 0;
-            counter_red--;
-            LCD_movecursor(1,11);
-            LCD_vSend_char(' ');
-            LCD_vSend_char((counter_red % 10) + 48);
-        }
-    }
-    _delay_ms(500);
-    LED_vTurnOff(LED_CAR_PORT, LED_CAR_R_PIN);
+	mode = PEDESTRIAN;
 }
