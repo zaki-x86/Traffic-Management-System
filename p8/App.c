@@ -13,10 +13,14 @@ CAR_LED carLED = GREEN; // 0 green 1 yellow	2 red
 CAR_LED prevcarLED = YELLOW;
 TRAFFIC_MODE mode = NORMAL; //1 normal 0 pedestrian
 
+void tfms_log_status(const char* msg) {
+	LCD_clearscreen();
+	LCD_vSend_string(msg);
+}
 
 void app_init(void) {
     //Car LED initialization
-    LED_vInit(LED_CAR_PORT, LED_CAR_G_PIN);
+	LED_vInit(LED_CAR_PORT, LED_CAR_G_PIN);
 	LED_vInit(LED_CAR_PORT, LED_CAR_Y_PIN);
 	LED_vInit(LED_CAR_PORT, LED_CAR_R_PIN);
 
@@ -30,7 +34,7 @@ void app_init(void) {
 
 	// LCD initialization
 	LCD_vInit();
-    
+
 	//LCD_vInit();
 	timer_init();
 
@@ -46,34 +50,34 @@ void app_run(void) {
     if (mode == NORMAL || carLED == GREEN || carLED == YELLOW) {
         if (mode == PEDESTRIAN)
             carLED = YELLOW;
-        
+
         // Turn off pedestrian leds
         LED_vTurnOff(LED_PED_PORT, LED_PED_G_PIN);
-        LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
-        
-		LCD_clearscreen();
-		LCD_vSend_string("press to cross");
+		LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
+		//LED_vTurnOn(LED_PED_PORT, LED_PED_R_PIN);
+
+		tfms_log_status("press to cross");
 
         switch(carLED){
 			case GREEN:
 				LED_vTurnOn(LED_CAR_PORT, LED_CAR_G_PIN);
 				LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
 				LED_vTurnOff(LED_CAR_PORT, LED_CAR_R_PIN);
-				
+
 				for(i = 0; i < 50; i++){
 					timer_delay(68);
-					
+
 					// Check if ISR was called
 					if(mode == PEDESTRIAN) {
 						break;
-					}	
+					}
 				}
 
 				carLED = YELLOW;
 				prevcarLED = GREEN;
 				break;
-				
-			case YELLOW:				
+
+			case YELLOW:
 				if(mode == PEDESTRIAN){
 					if(prevcarLED != RED){
 						LED_vTurnOn(LED_PED_PORT,LED_PED_R_PIN);
@@ -102,7 +106,7 @@ void app_run(void) {
 						timer_delay(180);
 						LED_vTurnOn(LED_CAR_PORT,LED_CAR_Y_PIN);
 						timer_delay(380);
-						
+
 						//check if ISR was called
 						if(mode == PEDESTRIAN) {
 							break;
@@ -124,9 +128,8 @@ void app_run(void) {
 				break;
 
 			case RED:
-				LCD_clearscreen();
-				LCD_vSend_string("cross the road");
-				
+				tfms_log_status("cross the road");
+
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_G_PIN);
 				LED_vTurnOff(LED_CAR_PORT,LED_CAR_Y_PIN);
 				LED_vTurnOn(LED_CAR_PORT,LED_CAR_R_PIN);
@@ -147,11 +150,10 @@ void app_run(void) {
 				prevcarLED = YELLOW;
 				break;
 		}
-		
+
 	} else {
-		LCD_clearscreen();
-		LCD_vSend_string("cross the road");
-		
+		tfms_log_status("cross the road");
+
 		//Configure PED LEDs
 		LED_vTurnOn(LED_PED_PORT, LED_PED_G_PIN);
 		LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
@@ -163,9 +165,8 @@ void app_run(void) {
 		LED_vTurnOn(LED_CAR_PORT, LED_CAR_R_PIN);
 
 		volatile unsigned int ped_counter = 10;
-		LCD_clearscreen();
-		LCD_vSend_string("Remaining 10 sec");
-		
+		tfms_log_status("Remaining 10 sec");
+
 		while(ped_counter > 0)
 		{
 			timer_delay(1000);
@@ -174,13 +175,12 @@ void app_run(void) {
 			LCD_vSend_char(' ');
 			LCD_vSend_char((ped_counter % 10) + 48);
 		}
-		
+
 		//make sure car red light is off
 		LED_vTurnOff(LED_CAR_PORT, LED_CAR_R_PIN);
-		
-		LCD_clearscreen();
-		LCD_vSend_string("Don't cross");
-		
+
+		tfms_log_status("Don't cross");
+
 		//blink both yellow while ped green is on
 		for(i = 0; i < 5; i++){
 			LED_vTurnOn(LED_CAR_PORT, LED_CAR_Y_PIN);
@@ -194,7 +194,7 @@ void app_run(void) {
 			timer_delay(390);
 		}
 
-		//Turn off yellow LEDs 
+		//Turn off yellow LEDs
 		LED_vTurnOff(LED_CAR_PORT, LED_CAR_Y_PIN);
 		LED_vTurnOff(LED_PED_PORT, LED_PED_Y_PIN);
 
@@ -208,7 +208,7 @@ void app_run(void) {
 		carLED = GREEN;
 		prevcarLED = YELLOW;
 	}
-	
+
 }
 
 ISR(__vector_1){

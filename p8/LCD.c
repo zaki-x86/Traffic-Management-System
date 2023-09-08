@@ -119,7 +119,7 @@ void LCD_clearscreen()
 void LCD_movecursor(char row, char coloumn)
 {
 	char data ;
-	if(row > 2||row < 1||coloumn > 16||coloumn < 1)
+	if(row > 2 ||row < 1 ||coloumn > 16 || coloumn < 1)
 	{
 		data = 0x80;
 	}

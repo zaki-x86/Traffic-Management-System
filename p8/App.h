@@ -25,8 +25,10 @@ enum TRAFFIC_MODE {
 	NORMAL
 };
 
-void app_init(void);
+void app_init(void);	// tfms_init
 
-void app_run(void);
+void app_run(void);		// tfms_run
+
+void tfms_log_status(const char* msg);
 
 #endif // !_APP_H_
